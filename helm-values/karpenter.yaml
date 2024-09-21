@@ -1,0 +1,18 @@
+nodeSelector:
+  type: core
+
+tolerations:
+- key: type
+  value: core
+  operator: "Equal"
+
+serviceAccount:
+  name: ${karpenter_service_account}
+  annotations:
+    eks.amazonaws.com/role-arn: ${karpenter_iam_role}
+
+settings:
+  clusterName: ${eks_cluster_name}
+  clusterEndpoint: ${eks_cluster_endpoint}
+  interruptionQueue: ${karpenter_queue_name}
+

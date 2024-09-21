@@ -1,0 +1,288 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: my-scheduler
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: my-scheduler-as-kube-scheduler
+subjects:
+- kind: ServiceAccount
+  name: my-scheduler
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: system:kube-scheduler
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: my-scheduler-as-volume-scheduler
+subjects:
+- kind: ServiceAccount
+  name: my-scheduler
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: system:volume-scheduler
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: my-scheduler
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - list
+  - update
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: my-scheduler
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: my-scheduler
+subjects:
+- kind: ServiceAccount
+  name: my-scheduler
+  namespace: kube-system
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-scheduler-config
+  namespace: kube-system
+data:
+  my-scheduler-config.yaml: |
+    apiVersion: kubescheduler.config.k8s.io/v1
+    kind: KubeSchedulerConfiguration
+    profiles:
+    - schedulerName: my-scheduler
+    extenders:
+    - urlPrefix: 'http://k8s-neuron-scheduler.kube-system.svc.cluster.local:12345'
+      filterVerb: filter
+      bindVerb: bind
+      enableHTTPS: false
+      nodeCacheCapable: true
+      managedResources:
+      - name: 'aws.amazon.com/neuron'
+        ignoredByScheduler: false
+      - name: 'aws.amazon.com/neuroncore'
+        ignoredByScheduler: false
+      - name: 'aws.amazon.com/neurondevice'
+        ignoredByScheduler: false
+      ignorable: false
+    leaderElection:
+      leaderElect: true
+      resourceNamespace: kube-system    
+      resourceName: my-scheduler
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    component: scheduler
+    tier: control-plane
+  name: my-scheduler
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      component: scheduler
+      tier: control-plane
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: scheduler
+        tier: control-plane
+        version: second
+    spec:
+      serviceAccountName: my-scheduler
+      containers:
+      - args:
+        - --config=/etc/kubernetes/my-scheduler/my-scheduler-config.yaml
+        - --leader-elect=true
+        - --v=2
+        command:
+        - /usr/local/bin/kube-scheduler
+        image: public.ecr.aws/eks-distro/kubernetes/kube-scheduler:v1.28.5-eks-1-28-latest
+        # or use below for your version of k8s
+        # image: registry.k8s.io/kube-scheduler:<version>
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 10259
+            scheme: HTTPS
+          initialDelaySeconds: 15
+        name: kube-second-scheduler
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 10259
+            scheme: HTTPS
+        resources:
+          requests:
+            cpu: '0.1'
+        securityContext:
+          privileged: false
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/kubernetes/my-scheduler
+      nodeSelector:
+        type: addon
+      tolerations:
+      - key: "type"
+        value: "addon"
+        operator: "Equal"
+        effect: "NoSchedule"
+      hostNetwork: false
+      hostPID: false
+      volumes:
+      - name: config-volume
+        configMap:
+          name: my-scheduler-config
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: k8s-neuron-scheduler
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - update
+  - patch
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - update
+  - patch
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - bindings
+  - pods/binding
+  verbs:
+  - create
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: k8s-neuron-scheduler
+  namespace: kube-system
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: k8s-neuron-scheduler
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: k8s-neuron-scheduler
+subjects:
+- kind: ServiceAccount
+  name: k8s-neuron-scheduler
+  namespace: kube-system
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: k8s-neuron-scheduler
+  namespace: kube-system
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+        app: neuron-scheduler
+        component: k8s-neuron-scheduler
+  template:
+    metadata:
+      labels:
+        app: neuron-scheduler
+        component: k8s-neuron-scheduler
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      serviceAccount: k8s-neuron-scheduler
+      schedulerName: my-scheduler
+      containers:
+      - name: neuron-scheduler-exp
+        # Find all neuron-scheduler images at https://gallery.ecr.aws/neuron/neuron-scheduler
+        image: public.ecr.aws/neuron/neuron-scheduler:2.22.4.0
+        env:
+        - name: PORT
+          value: "12345"
+      nodeSelector:
+        type: addon
+      tolerations:
+      - key: "type"
+        value: "addon"
+        operator: "Equal"
+        effect: "NoSchedule"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-neuron-scheduler
+  namespace: kube-system
+  labels:
+    app: neuron-scheduler
+    component: k8s-neuron-scheduler
+spec:
+  ports:
+  - port: 12345
+    name: http
+    targetPort: 12345
+  selector:
+    # select app=ingress-nginx pods
+    app: neuron-scheduler
+    component: k8s-neuron-scheduler   

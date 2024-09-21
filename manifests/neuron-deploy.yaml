@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: neuron-deploy
+  labels:
+    app: neuron
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: neuron
+  template:
+    metadata:
+      labels:
+        app: neuron
+    spec:
+      containers:
+      - name: neuron
+        image: 763104351884.dkr.ecr.${AWS_REGION}.amazonaws.com/pytorch-inference-neuron:1.13.1-neuron-py310-sdk2.12.0-ubuntu20.04
+        ports:
+        - containerPort: 80
