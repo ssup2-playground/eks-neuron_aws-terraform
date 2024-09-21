@@ -14,8 +14,19 @@ spec:
       labels:
         app: neuron
     spec:
+      nodeSelector:
+        type: inf
+      tolerations:
+      - key: "type"
+        value: "inf"
+        operator: "Equal"
+        effect: "NoSchedule"
       containers:
       - name: neuron
-        image: 763104351884.dkr.ecr.${AWS_REGION}.amazonaws.com/pytorch-inference-neuron:1.13.1-neuron-py310-sdk2.12.0-ubuntu20.04
-        ports:
-        - containerPort: 80
+        image: public.ecr.aws/neuron/pytorch-inference-neuron:1.13.1-neuron-py310-sdk2.20.0-ubuntu20.04
+        resources:
+          requests:
+            aws.amazon.com/neuroncore: 2
+          limits:
+            aws.amazon.com/neuroncore: 2
+

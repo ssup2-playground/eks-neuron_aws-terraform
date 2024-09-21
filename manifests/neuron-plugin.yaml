@@ -76,12 +76,6 @@ spec:
         name: neuron-device-plugin
     spec:
       serviceAccount: neuron-device-plugin
-      tolerations:
-      - key: CriticalAddonsOnly
-        operator: Exists
-      - key: aws.amazon.com/neuron
-        operator: Exists
-        effect: NoSchedule
       # Mark this pod as a critical add-on; when enabled, the critical add-on
       # scheduler reserves resources for critical add-on pods so that they can
       # be rescheduled after a failure.
@@ -106,6 +100,11 @@ spec:
                 - trn1.2xlarge
                 - trn1.32xlarge
                 - trn1n.32xlarge
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
       containers:
         # Find all neuron-device-plugin images at https://gallery.ecr.aws/neuron/neuron-device-plugin
       - image: public.ecr.aws/neuron/neuron-device-plugin:2.22.4.0

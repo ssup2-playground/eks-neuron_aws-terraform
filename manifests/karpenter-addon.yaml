@@ -1,4 +1,4 @@
-apiVersion: karpenter.sh/v1beta1
+apiVersion: karpenter.sh/v1
 kind: NodePool
 metadata:
   name: addon
@@ -9,6 +9,8 @@ spec:
         type: addon
     spec:
       nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
         name: addon
       requirements:
       - key: karpenter.sh/capacity-type
@@ -24,16 +26,15 @@ spec:
       - key: type
         value: addon
         effect: NoSchedule
-  consolidationPolicy: WhenEmpty
-  consolidateAfter: 30s
 ---
-apiVersion: karpenter.k8s.aws/v1beta1
+apiVersion: karpenter.k8s.aws/v1
 kind: EC2NodeClass
 metadata:
   name: addon
 spec:
-  amiFamily: AL2
   role: ${ec2_role_name}
+  amiSelectorTerms:
+  - alias: al2@latest
   subnetSelectorTerms:
   - tags:
       karpenter.sh/discovery: ${eks_cluster_name}

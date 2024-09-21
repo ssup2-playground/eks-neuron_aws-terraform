@@ -212,7 +212,7 @@ spec:
           - key: kernel-monitor.json
             path: kernel-monitor.json
       tolerations:
-        - effect: NoSchedule
-          operator: Exists
-        - effect: NoExecute
-          operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists

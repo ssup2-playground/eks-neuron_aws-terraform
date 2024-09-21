@@ -1,4 +1,4 @@
-apiVersion: karpenter.sh/v1beta1
+apiVersion: karpenter.sh/v1
 kind: NodePool
 metadata:
   name: inf
@@ -9,6 +9,8 @@ spec:
         type: inf
     spec:
       nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
         name: inf
       requirements:
       - key: karpenter.sh/capacity-type
@@ -19,18 +21,17 @@ spec:
         values: ["inf1"]
       taints:
       - key: type
-        value: addon
+        value: inf
         effect: NoSchedule
-  consolidationPolicy: WhenEmpty
-  consolidateAfter: 30s
 ---
-apiVersion: karpenter.k8s.aws/v1beta1
+apiVersion: karpenter.k8s.aws/v1
 kind: EC2NodeClass
 metadata:
   name: inf
 spec:
-  amiFamily: AL2
   role: ${ec2_role_name}
+  amiSelectorTerms:
+  - alias: al2@latest
   subnetSelectorTerms:
   - tags:
       karpenter.sh/discovery: ${eks_cluster_name}
@@ -39,3 +40,9 @@ spec:
       karpenter.sh/discovery: ${eks_cluster_name}
   tags:
     karpenter.sh/discovery: ${eks_cluster_name}
+  blockDeviceMappings:
+  - deviceName: /dev/xvda
+    ebs:
+      deleteOnTermination: true
+      volumeSize: 100Gi
+      volumeType: gp3
