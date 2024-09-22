@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: trn1-mlp
+spec:
+  restartPolicy: Never
+  schedulerName: my-scheduler
+  containers:
+    - name: trn1-mlp
+      command: ["/usr/local/bin/python3"]
+      args:  ["/opt/ml/mlp_train.py"]
+      image: 647554078242.dkr.ecr.us-east-1.amazonaws.com/sunda-pt:k8s_mlp_0907
+      imagePullPolicy: IfNotPresent
+      env:
+      - name: NEURON_RT_LOG_LEVEL
+        value: "INFO"
+      resources:
+        limits:
+          aws.amazon.com/neuron: 2
+        requests:
+          aws.amazon.com/neuron: 2

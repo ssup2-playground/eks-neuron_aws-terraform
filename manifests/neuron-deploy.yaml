@@ -14,6 +14,7 @@ spec:
       labels:
         app: neuron
     spec:
+      schedulerName: my-scheduler
       nodeSelector:
         type: inf
       tolerations:
@@ -23,10 +24,11 @@ spec:
         effect: "NoSchedule"
       containers:
       - name: neuron
-        image: public.ecr.aws/neuron/pytorch-inference-neuron:1.13.1-neuron-py310-sdk2.20.0-ubuntu20.04
+        image: nginx
+        #image: public.ecr.aws/neuron/pytorch-inference-neuron:1.13.1-neuron-py310-sdk2.20.0-ubuntu20.04
         resources:
           requests:
-            aws.amazon.com/neuroncore: 4
+            aws.amazon.com/neuron: 2
           limits:
-            aws.amazon.com/neuroncore: 4
+            aws.amazon.com/neuron: 2
 

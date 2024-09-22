@@ -19,6 +19,9 @@ spec:
       - key: karpenter.k8s.aws/instance-size
         operator: In
         values: ["xlarge"]
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: 5s
 ---
 apiVersion: karpenter.k8s.aws/v1
 kind: EC2NodeClass

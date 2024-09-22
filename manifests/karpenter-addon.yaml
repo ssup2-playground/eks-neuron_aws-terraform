@@ -26,6 +26,9 @@ spec:
       - key: type
         value: addon
         effect: NoSchedule
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: 5s
 ---
 apiVersion: karpenter.k8s.aws/v1
 kind: EC2NodeClass
