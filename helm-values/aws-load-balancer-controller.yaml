@@ -1,0 +1,16 @@
+vpcId : ${vpc_id}
+
+clusterName: ${eks_cluster_name}
+
+nodeSelector:
+  type: addon
+
+tolerations:
+- key: type
+  value: addon
+  operator: "Equal"
+
+serviceAccount:
+  name: ${controller_service_account}
+  annotations:
+    eks.amazonaws.com/role-arn: ${controller_iam_role}

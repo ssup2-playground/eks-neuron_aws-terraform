@@ -1,0 +1,47 @@
+replicas: 1
+
+nodeSelector:
+  type: addon
+
+tolerations:
+- key: type
+  value: addon
+  operator: "Equal"
+
+service:
+  type: "ClusterIP" # Do not set 'Loadbalacner' Type here. Set in workshop because of helm charts (aws-loadbalancer-controller, grafana) dependencies.
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "external"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+    service.beta.kubernetes.io/aws-load-balancer-security-groups: "${svc_sg}"
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+    - name: "prometheus"
+      type: "prometheus"
+      url: "http://prometheus-server.observability"
+      access: "proxy"
+      isDefault: false
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+    - name: "default"
+      orgId: 1
+      folder: ""
+      type: "file"
+      disableDeletion: false
+      editable: true
+      options:
+        path: "/var/lib/grafana/dashboards/default"
+
+dashboards:
+  default:
+    mysql:
+      gnetId: 14057
+      revision: 1
+      datasource: "amp"

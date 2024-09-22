@@ -26,7 +26,7 @@ spec:
         image: public.ecr.aws/neuron/pytorch-inference-neuron:1.13.1-neuron-py310-sdk2.20.0-ubuntu20.04
         resources:
           requests:
-            aws.amazon.com/neuroncore: 2
+            aws.amazon.com/neuroncore: 4
           limits:
-            aws.amazon.com/neuroncore: 2
+            aws.amazon.com/neuroncore: 4
 
