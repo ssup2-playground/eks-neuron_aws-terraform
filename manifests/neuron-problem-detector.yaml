@@ -111,6 +111,10 @@ spec:
     metadata:
       labels:
         app: node-problem-detector
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "20257"
     spec:
       affinity:
         nodeAffinity:
@@ -191,7 +195,7 @@ spec:
             fieldRef:
               fieldPath: spec.nodeName
         - name: ENABLE_RECOVERY
-          value: "false"
+          value: "true"
       serviceAccountName: node-problem-detector
       volumes:
       - name: log
