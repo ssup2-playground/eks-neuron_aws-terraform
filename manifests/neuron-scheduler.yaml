@@ -110,7 +110,7 @@ spec:
     matchLabels:
       component: scheduler
       tier: control-plane
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
@@ -237,7 +237,7 @@ metadata:
   name: k8s-neuron-scheduler
   namespace: kube-system
 spec:
-  replicas: 1
+  replicas: 2
   strategy:
     type: Recreate
   selector:

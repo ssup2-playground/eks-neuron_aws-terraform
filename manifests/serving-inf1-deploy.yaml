@@ -7,30 +7,30 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: app
-  name: serving
+  name: serving-inf1
   labels:
-    app: serving
+    app: serving-inf1
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: serving
+      app: serving-inf1
   template:
     metadata:
       labels:
-        app: serving
+        app: serving-inf1
     spec:
       schedulerName: my-scheduler
       nodeSelector:
-        type: inf
+        type: inf1
       tolerations:
       - key: "type"
-        value: "inf"
+        value: "inf1"
         operator: "Equal"
         effect: "NoSchedule"
       containers:
-      - name: serving
-        image: ghcr.io/ssup2-playground/eks-neuron_inf1-serving-app:0.1
+      - name: serving-inf1
+        image: ghcr.io/ssup2-playground/eks-neuron_serving-inf1-app:0.2
         resources:
           requests:
             aws.amazon.com/neuron: 2
@@ -41,7 +41,7 @@ apiVersion: v1
 kind: Service
 metadata:
   namespace: app
-  name: serving
+  name: serving-inf1
   annotations:
     service.beta.kubernetes.io/aws-load-balancer-type: "external"
     service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
@@ -49,7 +49,7 @@ metadata:
 spec:
   type: LoadBalancer
   selector:
-    app: serving
+    app: serving-inf1
   ports:
   - protocol: TCP
     port: 80

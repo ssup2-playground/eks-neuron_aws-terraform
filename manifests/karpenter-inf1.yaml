@@ -1,17 +1,17 @@
 apiVersion: karpenter.sh/v1
 kind: NodePool
 metadata:
-  name: inf
+  name: inf1
 spec:
   template:
     metadata:
       labels:
-        type: inf
+        type: inf1
     spec:
       nodeClassRef:
         group: karpenter.k8s.aws
         kind: EC2NodeClass
-        name: inf
+        name: inf1
       requirements:
       - key: karpenter.sh/capacity-type
         operator: In
@@ -21,7 +21,7 @@ spec:
         values: ["inf1"]
       taints:
       - key: type
-        value: inf
+        value: inf1
         effect: NoSchedule
   disruption:
     consolidationPolicy: WhenEmptyOrUnderutilized
@@ -30,7 +30,7 @@ spec:
 apiVersion: karpenter.k8s.aws/v1
 kind: EC2NodeClass
 metadata:
-  name: inf
+  name: inf1
 spec:
   role: ${ec2_role_name}
   amiSelectorTerms:

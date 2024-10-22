@@ -41,7 +41,5 @@ dashboardProviders:
 
 dashboards:
   default:
-    mysql:
-      gnetId: 14057
-      revision: 1
-      datasource: "amp"
+    neuron:
+      file: grafana-dashboards/neuron-monitor-grafana.json 

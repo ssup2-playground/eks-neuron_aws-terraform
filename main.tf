@@ -245,10 +245,10 @@ resource "kubectl_manifest" "karpenter_default" {
   ]
 }
 
-resource "kubectl_manifest" "karpenter_inf" {
+resource "kubectl_manifest" "karpenter_inf1" {
   for_each = toset(
     split("---",
-      templatefile("${path.module}/manifests/karpenter-inf.yaml",
+      templatefile("${path.module}/manifests/karpenter-inf1.yaml",
         {
           eks_cluster_name = module.eks.cluster_name
           ec2_role_name    = module.karpenter.node_iam_role_name
@@ -422,4 +422,17 @@ resource "helm_release" "grafana" {
   ]
 }
 
+## EKS / Inf1 Serving App
+resource "kubectl_manifest" "inf1_serving" {
+  for_each = toset(
+    split("---",
+      file("${path.module}/manifests/serving-inf1-deploy.yaml")
+    )
+  )
+  yaml_body = each.value
 
+  depends_on = [
+    module.karpenter,
+    helm_release.karpenter
+  ]
+}
