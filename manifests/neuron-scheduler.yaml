@@ -237,7 +237,7 @@ metadata:
   name: k8s-neuron-scheduler
   namespace: kube-system
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: Recreate
   selector:
