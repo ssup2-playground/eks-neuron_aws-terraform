@@ -30,7 +30,7 @@ spec:
         effect: "NoSchedule"
       containers:
       - name: serving-inf1
-        image: ghcr.io/ssup2-playground/eks-neuron_serving-inf1-app:0.2
+        image: ghcr.io/ssup2-playground/eks-neuron_serving-inf1-app:0.3
         resources:
           requests:
             aws.amazon.com/neuron: 2
